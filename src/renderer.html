@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MUD Client</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .connection-bar {
+            background-color: #333;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 1px solid #555;
+        }
+        
+        .connection-bar input {
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px;
+            font-family: inherit;
+        }
+        
+        .connection-bar button {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .connection-bar button:hover {
+            background-color: #666;
+        }
+        
+        .connection-bar button:disabled {
+            background-color: #333;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-left: auto;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        
+        .status.connected {
+            background-color: #0f5132;
+            color: #d1e7dd;
+        }
+        
+        .status.disconnected {
+            background-color: #842029;
+            color: #f8d7da;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .output {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #000;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        
+        .input-area {
+            background-color: #222;
+            padding: 10px;
+            border-top: 1px solid #555;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #555;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        .input-area button {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .input-area button:hover {
+            background-color: #666;
+        }
+        
+        .input-area button:disabled {
+            background-color: #333;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-bar">
+        <label for="host">Host:</label>
+        <input type="text" id="host" placeholder="mud.example.com" value="localhost">
+        
+        <label for="port">Port:</label>
+        <input type="number" id="port" placeholder="4000" value="23">
+        
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+        
+        <div class="status disconnected" id="status">Disconnected</div>
+    </div>
+    
+    <div class="main-content">
+        <div class="output" id="output">Welcome to MUD Client!
+Type a host and port above, then click Connect to start your adventure.
+
+</div>
+        
+        <div class="input-area">
+            <input type="text" id="commandInput" placeholder="Enter command..." disabled>
+            <button id="sendBtn" disabled>Send</button>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

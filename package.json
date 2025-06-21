@@ -1,0 +1,32 @@
+{
+  "name": "mudc",
+  "version": "1.0.0",
+  "description": "MUD client built with Electron",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "net": "^1.0.2"
+  },
+  "build": {
+    "appId": "com.example.mudc",
+    "productName": "MUD Client",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*"
+    ]
+  }
+}
