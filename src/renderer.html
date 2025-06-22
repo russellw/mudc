@@ -33,6 +33,11 @@
             font-family: inherit;
         }
         
+        .connection-bar input[type="checkbox"] {
+            padding: 0;
+            margin-right: 5px;
+        }
+        
         .connection-bar button {
             background-color: #555;
             color: #fff;
@@ -136,6 +141,10 @@
         
         <button id="connectBtn">Connect</button>
         <button id="disconnectBtn" disabled>Disconnect</button>
+        
+        <label for="soundAlerts">
+            <input type="checkbox" id="soundAlerts" checked> Sound Alerts
+        </label>
         
         <div class="status disconnected" id="status">Disconnected</div>
     </div>

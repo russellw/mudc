@@ -1,11 +1,14 @@
 let isConnected = false;
 let mudDatabase = null;
+let windowFocused = true;
+let soundAlertsEnabled = true;
 
 const mudSelect = document.getElementById('mudSelect');
 const hostInput = document.getElementById('host');
 const portInput = document.getElementById('port');
 const connectBtn = document.getElementById('connectBtn');
 const disconnectBtn = document.getElementById('disconnectBtn');
+const soundAlertsCheckbox = document.getElementById('soundAlerts');
 const status = document.getElementById('status');
 const output = document.getElementById('output');
 const commandInput = document.getElementById('commandInput');
@@ -175,6 +178,41 @@ function onMudSelectionChange() {
 
 mudSelect.addEventListener('change', onMudSelectionChange);
 
+// Handle sound alerts checkbox
+soundAlertsCheckbox.addEventListener('change', () => {
+    soundAlertsEnabled = soundAlertsCheckbox.checked;
+});
+
+// Track window focus for sound alerts
+window.addEventListener('focus', () => {
+    windowFocused = true;
+});
+
+window.addEventListener('blur', () => {
+    windowFocused = false;
+});
+
+function playAlertSound() {
+    if (!soundAlertsEnabled || windowFocused) return;
+    
+    // Create and play a simple beep sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+}
+
 // Load MUD database on startup
 loadMudDatabase();
 
@@ -246,6 +284,7 @@ async function sendCommand() {
 
 window.electronAPI.onTelnetData((event, data) => {
     appendToOutput(data);
+    playAlertSound();
 });
 
 window.electronAPI.onTelnetDisconnected(() => {
