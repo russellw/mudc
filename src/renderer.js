@@ -2,6 +2,7 @@ let isConnected = false;
 let mudDatabase = null;
 let windowFocused = true;
 let soundAlertsEnabled = true;
+let currentMudConfig = null;
 
 const mudSelect = document.getElementById('mudSelect');
 const hostInput = document.getElementById('host');
@@ -160,6 +161,7 @@ function onMudSelectionChange() {
     if (!mudDatabase) return;
     
     const selectedMud = mudDatabase.muds.find(mud => mud.id === selectedMudId);
+    currentMudConfig = selectedMud;
     
     if (selectedMud && !selectedMud.custom) {
         hostInput.value = selectedMud.host;
@@ -213,6 +215,41 @@ function playAlertSound() {
     oscillator.stop(audioContext.currentTime + 0.3);
 }
 
+async function executeAutoCommands() {
+    if (!currentMudConfig || !currentMudConfig.autoCommands || currentMudConfig.autoCommands.length === 0) {
+        return;
+    }
+    
+    appendToOutput('\n--- Executing auto-commands ---\n');
+    
+    for (let i = 0; i < currentMudConfig.autoCommands.length; i++) {
+        const command = currentMudConfig.autoCommands[i];
+        
+        // Wait a bit before sending each command to allow server processing
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (!isConnected) {
+            appendToOutput('--- Auto-commands stopped: disconnected ---\n');
+            break;
+        }
+        
+        try {
+            appendToOutput(`> ${command}\n`);
+            const result = await window.electronAPI.telnetSend(command);
+            
+            if (!result.success) {
+                appendToOutput(`Error sending auto-command: ${result.message}\n`);
+            }
+        } catch (error) {
+            appendToOutput(`Error sending auto-command "${command}": ${error.message}\n`);
+        }
+    }
+    
+    if (isConnected) {
+        appendToOutput('--- Auto-commands completed ---\n\n');
+    }
+}
+
 // Load MUD database on startup
 loadMudDatabase();
 
@@ -234,6 +271,11 @@ connectBtn.addEventListener('click', async () => {
         if (result.success) {
             updateConnectionState(true);
             appendToOutput(`\n--- ${result.message} ---\n`);
+            
+            // Execute auto-commands after a short delay to allow connection to stabilize
+            setTimeout(() => {
+                executeAutoCommands();
+            }, 1500);
         } else {
             throw new Error(result.message);
         }

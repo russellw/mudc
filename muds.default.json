@@ -6,7 +6,8 @@
       "description": "Enter your own host and port",
       "host": "",
       "port": "",
-      "custom": true
+      "custom": true,
+      "autoCommands": []
     },
     {
       "id": "batmud",
@@ -14,7 +15,8 @@
       "description": "One of the oldest and largest MUDs still running",
       "host": "batmud.bat.org",
       "port": 23,
-      "website": "http://www.bat.org/"
+      "website": "http://www.bat.org/",
+      "autoCommands": []
     },
     {
       "id": "achaea",
@@ -22,7 +24,11 @@
       "description": "Dreams of Divine Lands - Iron Realms Entertainment",
       "host": "achaea.com",
       "port": 23,
-      "website": "https://www.achaea.com/"
+      "website": "https://www.achaea.com/",
+      "autoCommands": [
+        "config colour on",
+        "config pagelength 0"
+      ]
     },
     {
       "id": "aardwolf",
@@ -30,7 +36,11 @@
       "description": "A unique MUD with extensive features",
       "host": "mud.aardwolf.com",
       "port": 4000,
-      "website": "https://www.aardwolf.com/"
+      "website": "https://www.aardwolf.com/",
+      "autoCommands": [
+        "config +color",
+        "config +autoloot"
+      ]
     },
     {
       "id": "discworld",
@@ -38,7 +48,8 @@
       "description": "Based on Terry Pratchett's Discworld novels",
       "host": "discworld.starturtle.net",
       "port": 23,
-      "website": "http://discworld.starturtle.net/"
+      "website": "http://discworld.starturtle.net/",
+      "autoCommands": []
     },
     {
       "id": "3kingdoms",
@@ -46,7 +57,8 @@
       "description": "A medieval fantasy MUD",
       "host": "3k.org",
       "port": 3000,
-      "website": "http://www.3k.org/"
+      "website": "http://www.3k.org/",
+      "autoCommands": []
     },
     {
       "id": "carrionfields",
@@ -54,7 +66,8 @@
       "description": "Player vs Player fantasy MUD",
       "host": "carrionfields.net",
       "port": 4449,
-      "website": "https://www.carrionfields.net/"
+      "website": "https://www.carrionfields.net/",
+      "autoCommands": []
     },
     {
       "id": "duris",
@@ -62,7 +75,8 @@
       "description": "Land of BloodLust - PvP MUD",
       "host": "duris.net",
       "port": 7777,
-      "website": "http://www.duris.net/"
+      "website": "http://www.duris.net/",
+      "autoCommands": []
     },
     {
       "id": "empiremud",
@@ -70,7 +84,8 @@
       "description": "City-building and empire management MUD",
       "host": "empiremud.net",
       "port": 4000,
-      "website": "http://empiremud.net/"
+      "website": "http://empiremud.net/",
+      "autoCommands": []
     },
     {
       "id": "arctic",
@@ -78,7 +93,8 @@
       "description": "Based on R.A. Salvatore's Drizzt novels",
       "host": "arctic.org",
       "port": 2700,
-      "website": "http://www.arctic.org/"
+      "website": "http://www.arctic.org/",
+      "autoCommands": []
     },
     {
       "id": "coffeemud",
@@ -86,7 +102,8 @@
       "description": "Java-based MUD with extensive features",
       "host": "coffeemud.net",
       "port": 23,
-      "website": "http://www.coffeemud.org/"
+      "website": "http://www.coffeemud.org/",
+      "autoCommands": []
     }
   ]
 }
