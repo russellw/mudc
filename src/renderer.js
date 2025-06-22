@@ -36,36 +36,6 @@ function appendToOutput(text) {
 }
 
 function parseAnsiColors(text) {
-    const ansiColorMap = {
-        '30': 'color: #000000',    // black
-        '31': 'color: #ff0000',    // red
-        '32': 'color: #00ff00',    // green
-        '33': 'color: #ffff00',    // yellow
-        '34': 'color: #0000ff',    // blue
-        '35': 'color: #ff00ff',    // magenta
-        '36': 'color: #00ffff',    // cyan
-        '37': 'color: #ffffff',    // white
-        '90': 'color: #555555',    // bright black (dark gray)
-        '91': 'color: #ff5555',    // bright red
-        '92': 'color: #55ff55',    // bright green
-        '93': 'color: #ffff55',    // bright yellow
-        '94': 'color: #5555ff',    // bright blue
-        '95': 'color: #ff55ff',    // bright magenta
-        '96': 'color: #55ffff',    // bright cyan
-        '97': 'color: #ffffff',    // bright white
-        '40': 'background-color: #000000',  // black background
-        '41': 'background-color: #ff0000',  // red background
-        '42': 'background-color: #00ff00',  // green background
-        '43': 'background-color: #ffff00',  // yellow background
-        '44': 'background-color: #0000ff',  // blue background
-        '45': 'background-color: #ff00ff',  // magenta background
-        '46': 'background-color: #00ffff',  // cyan background
-        '47': 'background-color: #ffffff',  // white background
-        '1': 'font-weight: bold',           // bold
-        '4': 'text-decoration: underline',  // underline
-        '0': ''                             // reset
-    };
-
     // Escape HTML entities first
     let html = text.replace(/&/g, '&amp;')
                    .replace(/</g, '&lt;')
@@ -73,29 +43,72 @@ function parseAnsiColors(text) {
                    .replace(/"/g, '&quot;')
                    .replace(/'/g, '&#39;');
 
-    // Parse ANSI escape sequences
-    html = html.replace(/\x1b\[([0-9;]*)m/g, (match, codes) => {
-        if (!codes) codes = '0';
-        
-        const codeArray = codes.split(';');
-        let styles = [];
-        
-        for (let code of codeArray) {
-            if (code === '0' || code === '') {
-                return '</span>';
+    let result = '';
+    let openSpanCount = 0;
+    
+    // Split by ANSI escape sequences while keeping them
+    const parts = html.split(/(\x1b\[[0-9;]*m)/);
+    
+    for (let part of parts) {
+        if (part.match(/\x1b\[([0-9;]*)m/)) {
+            // This is an ANSI escape sequence
+            const codes = part.match(/\x1b\[([0-9;]*)m/)[1];
+            const codeArray = codes ? codes.split(';') : ['0'];
+            
+            // Check for reset
+            if (codeArray.includes('0') || codes === '') {
+                // Close all open spans
+                result += '</span>'.repeat(openSpanCount);
+                openSpanCount = 0;
+            } else {
+                // Build styles
+                let styles = [];
+                for (let code of codeArray) {
+                    switch(code) {
+                        case '30': styles.push('color: #000000'); break;
+                        case '31': styles.push('color: #ff0000'); break;
+                        case '32': styles.push('color: #00ff00'); break;
+                        case '33': styles.push('color: #ffff00'); break;
+                        case '34': styles.push('color: #0000ff'); break;
+                        case '35': styles.push('color: #ff00ff'); break;
+                        case '36': styles.push('color: #00ffff'); break;
+                        case '37': styles.push('color: #ffffff'); break;
+                        case '90': styles.push('color: #555555'); break;
+                        case '91': styles.push('color: #ff5555'); break;
+                        case '92': styles.push('color: #55ff55'); break;
+                        case '93': styles.push('color: #ffff55'); break;
+                        case '94': styles.push('color: #5555ff'); break;
+                        case '95': styles.push('color: #ff55ff'); break;
+                        case '96': styles.push('color: #55ffff'); break;
+                        case '97': styles.push('color: #ffffff'); break;
+                        case '40': styles.push('background-color: #000000'); break;
+                        case '41': styles.push('background-color: #ff0000'); break;
+                        case '42': styles.push('background-color: #00ff00'); break;
+                        case '43': styles.push('background-color: #ffff00'); break;
+                        case '44': styles.push('background-color: #0000ff'); break;
+                        case '45': styles.push('background-color: #ff00ff'); break;
+                        case '46': styles.push('background-color: #00ffff'); break;
+                        case '47': styles.push('background-color: #ffffff'); break;
+                        case '1': styles.push('font-weight: bold'); break;
+                        case '4': styles.push('text-decoration: underline'); break;
+                    }
+                }
+                
+                if (styles.length > 0) {
+                    result += `<span style="${styles.join('; ')}">`;
+                    openSpanCount++;
+                }
             }
-            if (ansiColorMap[code]) {
-                styles.push(ansiColorMap[code]);
-            }
+        } else {
+            // Regular text
+            result += part;
         }
-        
-        if (styles.length > 0) {
-            return `<span style="${styles.join('; ')}">`;
-        }
-        return '';
-    });
-
-    return html;
+    }
+    
+    // Close any remaining open spans
+    result += '</span>'.repeat(openSpanCount);
+    
+    return result;
 }
 
 connectBtn.addEventListener('click', async () => {
