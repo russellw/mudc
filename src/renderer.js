@@ -1,5 +1,7 @@
 let isConnected = false;
+let mudDatabase = null;
 
+const mudSelect = document.getElementById('mudSelect');
 const hostInput = document.getElementById('host');
 const portInput = document.getElementById('port');
 const connectBtn = document.getElementById('connectBtn');
@@ -12,20 +14,23 @@ const sendBtn = document.getElementById('sendBtn');
 function updateConnectionState(connected) {
     isConnected = connected;
     
-    hostInput.disabled = connected;
-    portInput.disabled = connected;
+    mudSelect.disabled = connected;
     connectBtn.disabled = connected;
     disconnectBtn.disabled = !connected;
     commandInput.disabled = !connected;
     sendBtn.disabled = !connected;
     
     if (connected) {
+        hostInput.disabled = true;
+        portInput.disabled = true;
         status.textContent = `Connected to ${hostInput.value}:${portInput.value}`;
         status.className = 'status connected';
         commandInput.focus();
     } else {
         status.textContent = 'Disconnected';
         status.className = 'status disconnected';
+        // Re-enable host/port based on MUD selection
+        onMudSelectionChange();
     }
 }
 
@@ -110,6 +115,68 @@ function parseAnsiColors(text) {
     
     return result;
 }
+
+// Load MUD database and populate dropdown
+async function loadMudDatabase() {
+    try {
+        const result = await window.electronAPI.loadMudDatabase();
+        if (result.success) {
+            mudDatabase = result.data;
+            populateMudDropdown();
+            
+            if (result.usingDefault) {
+                appendToOutput('Created muds.json from defaults. You can edit this file to customize your MUD list.\n\n');
+            }
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Failed to load MUD database:', error);
+        mudSelect.innerHTML = '<option value="custom">Custom Connection</option>';
+        appendToOutput(`Failed to load MUD database: ${error.message}\n\n`);
+    }
+}
+
+function populateMudDropdown() {
+    mudSelect.innerHTML = '';
+    
+    if (mudDatabase && mudDatabase.muds) {
+        mudDatabase.muds.forEach(mud => {
+            const option = document.createElement('option');
+            option.value = mud.id;
+            option.textContent = mud.name;
+            option.title = mud.description;
+            mudSelect.appendChild(option);
+        });
+    }
+}
+
+function onMudSelectionChange() {
+    const selectedMudId = mudSelect.value;
+    
+    if (!mudDatabase) return;
+    
+    const selectedMud = mudDatabase.muds.find(mud => mud.id === selectedMudId);
+    
+    if (selectedMud && !selectedMud.custom) {
+        hostInput.value = selectedMud.host;
+        portInput.value = selectedMud.port;
+        hostInput.disabled = true;
+        portInput.disabled = true;
+    } else {
+        hostInput.disabled = false;
+        portInput.disabled = false;
+        if (selectedMudId === 'custom') {
+            hostInput.value = 'localhost';
+            portInput.value = '4000';
+        }
+    }
+}
+
+mudSelect.addEventListener('change', onMudSelectionChange);
+
+// Load MUD database on startup
+loadMudDatabase();
 
 connectBtn.addEventListener('click', async () => {
     const host = hostInput.value.trim();

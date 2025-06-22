@@ -24,7 +24,8 @@
             border-bottom: 1px solid #555;
         }
         
-        .connection-bar input {
+        .connection-bar input,
+        .connection-bar select {
             background-color: #222;
             color: #fff;
             border: 1px solid #555;
@@ -122,6 +123,11 @@
 </head>
 <body>
     <div class="connection-bar">
+        <label for="mudSelect">MUD:</label>
+        <select id="mudSelect">
+            <option value="">Loading...</option>
+        </select>
+        
         <label for="host">Host:</label>
         <input type="text" id="host" placeholder="mud.example.com" value="localhost">
         

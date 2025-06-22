@@ -1,0 +1,92 @@
+{
+  "muds": [
+    {
+      "id": "custom",
+      "name": "Custom Connection",
+      "description": "Enter your own host and port",
+      "host": "",
+      "port": "",
+      "custom": true
+    },
+    {
+      "id": "batmud",
+      "name": "BatMUD",
+      "description": "One of the oldest and largest MUDs still running",
+      "host": "batmud.bat.org",
+      "port": 23,
+      "website": "http://www.bat.org/"
+    },
+    {
+      "id": "achaea",
+      "name": "Achaea",
+      "description": "Dreams of Divine Lands - Iron Realms Entertainment",
+      "host": "achaea.com",
+      "port": 23,
+      "website": "https://www.achaea.com/"
+    },
+    {
+      "id": "aardwolf",
+      "name": "Aardwolf MUD",
+      "description": "A unique MUD with extensive features",
+      "host": "mud.aardwolf.com",
+      "port": 4000,
+      "website": "https://www.aardwolf.com/"
+    },
+    {
+      "id": "discworld",
+      "name": "Discworld MUD",
+      "description": "Based on Terry Pratchett's Discworld novels",
+      "host": "discworld.starturtle.net",
+      "port": 23,
+      "website": "http://discworld.starturtle.net/"
+    },
+    {
+      "id": "3kingdoms",
+      "name": "3Kingdoms",
+      "description": "A medieval fantasy MUD",
+      "host": "3k.org",
+      "port": 3000,
+      "website": "http://www.3k.org/"
+    },
+    {
+      "id": "carrionfields",
+      "name": "Carrion Fields",
+      "description": "Player vs Player fantasy MUD",
+      "host": "carrionfields.net",
+      "port": 4449,
+      "website": "https://www.carrionfields.net/"
+    },
+    {
+      "id": "duris",
+      "name": "Duris",
+      "description": "Land of BloodLust - PvP MUD",
+      "host": "duris.net",
+      "port": 7777,
+      "website": "http://www.duris.net/"
+    },
+    {
+      "id": "empiremud",
+      "name": "EmpireMUD",
+      "description": "City-building and empire management MUD",
+      "host": "empiremud.net",
+      "port": 4000,
+      "website": "http://empiremud.net/"
+    },
+    {
+      "id": "arctic",
+      "name": "Arctic MUD",
+      "description": "Based on R.A. Salvatore's Drizzt novels",
+      "host": "arctic.org",
+      "port": 2700,
+      "website": "http://www.arctic.org/"
+    },
+    {
+      "id": "coffeemud",
+      "name": "CoffeeMud",
+      "description": "Java-based MUD with extensive features",
+      "host": "coffeemud.net",
+      "port": 23,
+      "website": "http://www.coffeemud.org/"
+    }
+  ]
+}

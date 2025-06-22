@@ -126,3 +126,36 @@ ipcMain.handle('telnet-disconnect', async () => {
   }
   return { success: false, message: 'Not connected' };
 });
+
+ipcMain.handle('load-mud-database', async () => {
+  try {
+    const userMudPath = path.join(__dirname, '..', 'muds.json');
+    const defaultMudPath = path.join(__dirname, '..', 'muds.default.json');
+    
+    let data;
+    let usingDefault = false;
+    
+    // Try to load user's custom MUD list first
+    try {
+      data = fs.readFileSync(userMudPath, 'utf8');
+    } catch (error) {
+      // If user file doesn't exist, copy default and use it
+      try {
+        const defaultData = fs.readFileSync(defaultMudPath, 'utf8');
+        fs.writeFileSync(userMudPath, defaultData);
+        data = defaultData;
+        usingDefault = true;
+      } catch (defaultError) {
+        throw new Error(`Cannot load MUD database: ${defaultError.message}`);
+      }
+    }
+    
+    return { 
+      success: true, 
+      data: JSON.parse(data),
+      usingDefault: usingDefault
+    };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+});
