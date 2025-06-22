@@ -9,7 +9,9 @@ let telnetSocket = null;
 const mudLogPath = path.join(__dirname, '..', 'log.txt');
 
 function logMudOutput(data) {
-  fs.appendFileSync(mudLogPath, data);
+  // Strip ANSI escape sequences for clean log file
+  const cleanData = data.replace(/\x1b\[[0-9;]*m/g, '');
+  fs.appendFileSync(mudLogPath, cleanData);
 }
 
 function createWindow() {
