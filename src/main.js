@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const net = require('net');
+const fs = require('fs');
 
 let mainWindow;
 let telnetSocket = null;
@@ -19,6 +20,29 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'renderer.html'));
 
+  const errorLogPath = path.join(__dirname, '..', 'error.log');
+  
+  function logError(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ${message}\n`;
+    fs.appendFileSync(errorLogPath, logEntry);
+    console.log(message); // Also log to console
+  }
+
+  // Enable all error logging
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    logError(`[RENDERER-${level}] ${message} (${sourceId}:${line})`);
+  });
+
+  // Log any unhandled exceptions
+  process.on('uncaughtException', (error) => {
+    logError(`Uncaught Exception: ${error.stack || error.message}`);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    logError(`Unhandled Rejection: ${reason} at ${promise}`);
+  });
+
   if (process.argv.includes('--dev')) {
     mainWindow.webContents.openDevTools();
   }
@@ -30,9 +54,13 @@ app.on('window-all-closed', () => {
   if (telnetSocket) {
     telnetSocket.destroy();
   }
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  
+  // Add a delay before quitting to capture any exit errors
+  setTimeout(() => {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  }, 2000);
 });
 
 app.on('activate', () => {
@@ -54,7 +82,9 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     });
 
     telnetSocket.on('data', (data) => {
-      mainWindow.webContents.send('telnet-data', data.toString());
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('telnet-data', data.toString());
+      }
     });
 
     telnetSocket.on('error', (error) => {
@@ -62,7 +92,9 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     });
 
     telnetSocket.on('close', () => {
-      mainWindow.webContents.send('telnet-disconnected');
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('telnet-disconnected');
+      }
       telnetSocket = null;
     });
   });
