@@ -30,8 +30,72 @@ function updateConnectionState(connected) {
 }
 
 function appendToOutput(text) {
-    output.textContent += text;
+    const coloredHtml = parseAnsiColors(text);
+    output.innerHTML += coloredHtml;
     output.scrollTop = output.scrollHeight;
+}
+
+function parseAnsiColors(text) {
+    const ansiColorMap = {
+        '30': 'color: #000000',    // black
+        '31': 'color: #ff0000',    // red
+        '32': 'color: #00ff00',    // green
+        '33': 'color: #ffff00',    // yellow
+        '34': 'color: #0000ff',    // blue
+        '35': 'color: #ff00ff',    // magenta
+        '36': 'color: #00ffff',    // cyan
+        '37': 'color: #ffffff',    // white
+        '90': 'color: #555555',    // bright black (dark gray)
+        '91': 'color: #ff5555',    // bright red
+        '92': 'color: #55ff55',    // bright green
+        '93': 'color: #ffff55',    // bright yellow
+        '94': 'color: #5555ff',    // bright blue
+        '95': 'color: #ff55ff',    // bright magenta
+        '96': 'color: #55ffff',    // bright cyan
+        '97': 'color: #ffffff',    // bright white
+        '40': 'background-color: #000000',  // black background
+        '41': 'background-color: #ff0000',  // red background
+        '42': 'background-color: #00ff00',  // green background
+        '43': 'background-color: #ffff00',  // yellow background
+        '44': 'background-color: #0000ff',  // blue background
+        '45': 'background-color: #ff00ff',  // magenta background
+        '46': 'background-color: #00ffff',  // cyan background
+        '47': 'background-color: #ffffff',  // white background
+        '1': 'font-weight: bold',           // bold
+        '4': 'text-decoration: underline',  // underline
+        '0': ''                             // reset
+    };
+
+    // Escape HTML entities first
+    let html = text.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;')
+                   .replace(/"/g, '&quot;')
+                   .replace(/'/g, '&#39;');
+
+    // Parse ANSI escape sequences
+    html = html.replace(/\x1b\[([0-9;]*)m/g, (match, codes) => {
+        if (!codes) codes = '0';
+        
+        const codeArray = codes.split(';');
+        let styles = [];
+        
+        for (let code of codeArray) {
+            if (code === '0' || code === '') {
+                return '</span>';
+            }
+            if (ansiColorMap[code]) {
+                styles.push(ansiColorMap[code]);
+            }
+        }
+        
+        if (styles.length > 0) {
+            return `<span style="${styles.join('; ')}">`;
+        }
+        return '';
+    });
+
+    return html;
 }
 
 connectBtn.addEventListener('click', async () => {
