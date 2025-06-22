@@ -6,6 +6,12 @@ const fs = require('fs');
 let mainWindow;
 let telnetSocket = null;
 
+const mudLogPath = path.join(__dirname, '..', 'log.txt');
+
+function logMudOutput(data) {
+  fs.appendFileSync(mudLogPath, data);
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -82,8 +88,10 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     });
 
     telnetSocket.on('data', (data) => {
+      const dataString = data.toString();
+      logMudOutput(dataString);
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('telnet-data', data.toString());
+        mainWindow.webContents.send('telnet-data', dataString);
       }
     });
 
