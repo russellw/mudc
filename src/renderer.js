@@ -152,6 +152,17 @@ function populateMudDropdown() {
             option.title = mud.description;
             mudSelect.appendChild(option);
         });
+        
+        // Set default to first non-custom MUD entry
+        const firstNonCustomMud = mudDatabase.muds.find(mud => !mud.custom);
+        if (firstNonCustomMud) {
+            mudSelect.value = firstNonCustomMud.id;
+            hostInput.value = firstNonCustomMud.host;
+            portInput.value = firstNonCustomMud.port;
+            hostInput.disabled = true;
+            portInput.disabled = true;
+            currentMudConfig = firstNonCustomMud;
+        }
     }
 }
 
