@@ -26,6 +26,8 @@ function createWindow() {
     }
   });
 
+  mainWindow.maximize();
+
   mainWindow.loadFile(path.join(__dirname, 'renderer.html'));
 
   const errorLogPath = path.join(__dirname, '..', 'error.log');
