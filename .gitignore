@@ -8,7 +8,7 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # MUD client logs
-log.txt
+*.txt
 
 # User-customizable MUD list (defaults provided in muds.default.json)
 muds.json
