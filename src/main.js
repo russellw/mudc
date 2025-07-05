@@ -5,10 +5,12 @@ const fs = require('fs');
 
 let mainWindow;
 let telnetSocket = null;
+let enableLogging = false;
 
 const mudLogPath = path.join(__dirname, '..', 'log.txt');
 
 function logMudOutput(data) {
+  if (!enableLogging) return;
   // Strip ANSI escape sequences for clean log file
   const cleanData = data.replace(/\x1b\[[0-9;]*m/g, '');
   fs.appendFileSync(mudLogPath, cleanData);
@@ -88,6 +90,7 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     telnetSocket = new net.Socket();
     
     telnetSocket.connect(port, host, () => {
+      enableLogging = false; // Reset logging state on new connection
       resolve({ success: true, message: `Connected to ${host}:${port}` });
     });
 
@@ -114,6 +117,7 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
 
 ipcMain.handle('telnet-send', async (event, data) => {
   if (telnetSocket && !telnetSocket.destroyed) {
+    enableLogging = true; // Enable logging when user sends first command
     telnetSocket.write(data + '\r\n');
     return { success: true };
   }
