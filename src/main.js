@@ -115,9 +115,11 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
   });
 });
 
-ipcMain.handle('telnet-send', async (event, data) => {
+ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
   if (telnetSocket && !telnetSocket.destroyed) {
-    enableLogging = true; // Enable logging when user sends first command
+    if (!isAutoCommand) {
+      enableLogging = true; // Enable logging when user sends first command
+    }
     // Replace ' !' at end of command with '!'
     const processedData = data.replace(/ !$/, '!');
     telnetSocket.write(processedData + '\r\n');

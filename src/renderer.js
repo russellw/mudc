@@ -246,7 +246,7 @@ async function executeAutoCommands() {
         
         try {
             appendToOutput(`> ${command}\n`);
-            const result = await window.electronAPI.telnetSend(command);
+            const result = await window.electronAPI.telnetSend(command, true);
             
             if (!result.success) {
                 appendToOutput(`Error sending auto-command: ${result.message}\n`);
