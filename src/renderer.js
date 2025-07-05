@@ -320,7 +320,9 @@ commandInput.addEventListener('keypress', (e) => {
 });
 
 async function sendCommand() {
-    const command = commandInput.value.trim();
+    const rawCommand = commandInput.value;
+    // Remove trailing newlines and replace internal newlines with %r
+    const command = rawCommand.replace(/\n+$/, '').replace(/\n/g, '%r');
     if (!command || !isConnected) return;
     
     try {
