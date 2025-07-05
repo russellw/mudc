@@ -258,6 +258,7 @@ async function executeAutoCommands() {
     
     if (isConnected) {
         appendToOutput('--- Auto-commands completed ---\n\n');
+        commandInput.focus(); // Restore focus after auto-commands
     }
 }
 
@@ -312,7 +313,8 @@ disconnectBtn.addEventListener('click', async () => {
 sendBtn.addEventListener('click', sendCommand);
 
 commandInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
         sendCommand();
     }
 });
