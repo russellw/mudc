@@ -121,8 +121,9 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
       enableLogging = true; // Enable logging when user sends first command
     }
     // Replace ' !' at end of command with '!'
-    const processedData = data.replace(/ !$/, '!');
-    telnetSocket.write(processedData + '\r\n');
+    let s = data.replace(/ !$/, '!');
+    s = s.replace(/ \?$/, '?');
+    telnetSocket.write(s + '\r\n');
     return { success: true };
   }
   return { success: false, message: 'Not connected' };
