@@ -123,6 +123,7 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
     // Replace ' !' at end of command with '!'
     let s = data.replace(/ !$/, '!');
     s = s.replace(/ \?$/, '?');
+    s = s.replace(/^' /, "'");
     telnetSocket.write(s + '\r\n');
     return { success: true };
   }
