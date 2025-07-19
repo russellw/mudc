@@ -124,6 +124,8 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
     let s = data.replace(/ !$/, '!');
     s = s.replace(/ \?$/, '?');
     s = s.replace(/^' /, "'");
+    // If string begins with non-letter followed by letter, make letter uppercase
+    s = s.replace(/^([^a-zA-Z])([a-z])/, (match, p1, p2) => p1 + p2.toUpperCase());
     telnetSocket.write(s + '\r\n');
     return { success: true };
   }
