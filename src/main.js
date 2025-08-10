@@ -7,7 +7,7 @@ let mainWindow;
 let telnetSocket = null;
 let enableLogging = false;
 let reconnectAttempts = 0;
-let maxReconnectAttempts = 5;
+let maxReconnectAttempts = 100;
 let reconnectDelay = 3000; // Start with 3 seconds
 let reconnectTimer = null;
 let lastConnectionInfo = null; // Store host/port for reconnection
