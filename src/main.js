@@ -6,6 +6,11 @@ const fs = require('fs');
 let mainWindow;
 let telnetSocket = null;
 let enableLogging = false;
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 5;
+let reconnectDelay = 3000; // Start with 3 seconds
+let reconnectTimer = null;
+let lastConnectionInfo = null; // Store host/port for reconnection
 
 const mudLogPath = path.join(__dirname, '..', 'log.txt');
 
@@ -63,6 +68,11 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  
   if (telnetSocket) {
     telnetSocket.destroy();
   }
@@ -81,6 +91,88 @@ app.on('activate', () => {
   }
 });
 
+function attemptReconnect() {
+  if (reconnectAttempts >= maxReconnectAttempts || !lastConnectionInfo) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('telnet-reconnect-failed', {
+        attempts: reconnectAttempts,
+        maxAttempts: maxReconnectAttempts
+      });
+    }
+    reconnectAttempts = 0;
+    return;
+  }
+
+  reconnectAttempts++;
+  const delay = Math.min(reconnectDelay * Math.pow(1.5, reconnectAttempts - 1), 30000); // Max 30 seconds
+  
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('telnet-reconnecting', {
+      attempt: reconnectAttempts,
+      maxAttempts: maxReconnectAttempts,
+      delaySeconds: Math.round(delay / 1000)
+    });
+  }
+
+  reconnectTimer = setTimeout(() => {
+    connectToTelnetServer(lastConnectionInfo.host, lastConnectionInfo.port, true);
+  }, delay);
+}
+
+function connectToTelnetServer(host, port, isReconnect = false) {
+  if (telnetSocket) {
+    telnetSocket.destroy();
+  }
+
+  telnetSocket = new net.Socket();
+  
+  telnetSocket.connect(port, host, () => {
+    if (!isReconnect) {
+      enableLogging = false; // Reset logging state on new connection
+      lastConnectionInfo = { host, port }; // Store for potential reconnection
+    }
+    reconnectAttempts = 0; // Reset reconnection attempts on successful connection
+    
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (isReconnect) {
+        mainWindow.webContents.send('telnet-reconnected', `Reconnected to ${host}:${port}`);
+      } else {
+        mainWindow.webContents.send('telnet-connected', `Connected to ${host}:${port}`);
+      }
+    }
+  });
+
+  telnetSocket.on('data', (data) => {
+    const dataString = data.toString();
+    logMudOutput(dataString);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('telnet-data', dataString);
+    }
+  });
+
+  telnetSocket.on('error', (error) => {
+    if (isReconnect) {
+      // If this is a reconnection attempt, try again
+      attemptReconnect();
+    } else {
+      // If this is the initial connection, report error immediately
+      throw new Error(error.message);
+    }
+  });
+
+  telnetSocket.on('close', (hadError) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('telnet-disconnected');
+    }
+    telnetSocket = null;
+    
+    // Start reconnection attempts if this wasn't a deliberate disconnect
+    if (lastConnectionInfo && !hadError) {
+      attemptReconnect();
+    }
+  });
+}
+
 ipcMain.handle('telnet-connect', async (event, host, port) => {
   return new Promise((resolve, reject) => {
     if (telnetSocket) {
@@ -91,6 +183,8 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     
     telnetSocket.connect(port, host, () => {
       enableLogging = false; // Reset logging state on new connection
+      lastConnectionInfo = { host, port }; // Store for potential reconnection
+      reconnectAttempts = 0; // Reset reconnection attempts on successful connection
       resolve({ success: true, message: `Connected to ${host}:${port}` });
     });
 
@@ -106,11 +200,16 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
       reject({ success: false, message: error.message });
     });
 
-    telnetSocket.on('close', () => {
+    telnetSocket.on('close', (hadError) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('telnet-disconnected');
       }
       telnetSocket = null;
+      
+      // Start reconnection attempts if this wasn't a deliberate disconnect
+      if (lastConnectionInfo && !hadError) {
+        attemptReconnect();
+      }
     });
   });
 });
@@ -133,6 +232,14 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
 });
 
 ipcMain.handle('telnet-disconnect', async () => {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  
+  lastConnectionInfo = null; // Clear connection info to prevent reconnection
+  reconnectAttempts = 0;
+  
   if (telnetSocket) {
     telnetSocket.destroy();
     telnetSocket = null;

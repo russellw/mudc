@@ -7,5 +7,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadMudDatabase: () => ipcRenderer.invoke('load-mud-database'),
   onTelnetData: (callback) => ipcRenderer.on('telnet-data', callback),
   onTelnetDisconnected: (callback) => ipcRenderer.on('telnet-disconnected', callback),
+  onTelnetConnected: (callback) => ipcRenderer.on('telnet-connected', callback),
+  onTelnetReconnecting: (callback) => ipcRenderer.on('telnet-reconnecting', callback),
+  onTelnetReconnected: (callback) => ipcRenderer.on('telnet-reconnected', callback),
+  onTelnetReconnectFailed: (callback) => ipcRenderer.on('telnet-reconnect-failed', callback),
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });

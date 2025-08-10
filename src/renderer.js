@@ -349,7 +349,38 @@ window.electronAPI.onTelnetDisconnected(() => {
     appendToOutput('\n--- Connection closed by server ---\n');
 });
 
+window.electronAPI.onTelnetConnected((event, message) => {
+    updateConnectionState(true);
+    appendToOutput(`\n--- ${message} ---\n`);
+});
+
+window.electronAPI.onTelnetReconnecting((event, data) => {
+    status.textContent = `Reconnecting... (${data.attempt}/${data.maxAttempts}) - Next attempt in ${data.delaySeconds}s`;
+    status.className = 'status reconnecting';
+    appendToOutput(`\n--- Reconnecting (attempt ${data.attempt}/${data.maxAttempts}) - Next attempt in ${data.delaySeconds} seconds ---\n`);
+});
+
+window.electronAPI.onTelnetReconnected((event, message) => {
+    updateConnectionState(true);
+    appendToOutput(`\n--- ${message} ---\n`);
+    
+    // Execute auto-commands after reconnection
+    setTimeout(() => {
+        executeAutoCommands();
+    }, 1500);
+});
+
+window.electronAPI.onTelnetReconnectFailed((event, data) => {
+    status.textContent = `Reconnection failed after ${data.attempts} attempts`;
+    status.className = 'status disconnected';
+    appendToOutput(`\n--- Reconnection failed after ${data.attempts}/${data.maxAttempts} attempts ---\n`);
+});
+
 window.addEventListener('beforeunload', () => {
     window.electronAPI.removeAllListeners('telnet-data');
     window.electronAPI.removeAllListeners('telnet-disconnected');
+    window.electronAPI.removeAllListeners('telnet-connected');
+    window.electronAPI.removeAllListeners('telnet-reconnecting');
+    window.electronAPI.removeAllListeners('telnet-reconnected');
+    window.electronAPI.removeAllListeners('telnet-reconnect-failed');
 });
