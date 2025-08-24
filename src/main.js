@@ -166,8 +166,8 @@ function connectToTelnetServer(host, port, isReconnect = false) {
     }
     telnetSocket = null;
     
-    // Start reconnection attempts if this wasn't a deliberate disconnect
-    if (lastConnectionInfo && !hadError) {
+    // Start reconnection attempts if we have connection info (not a deliberate disconnect)
+    if (lastConnectionInfo) {
       attemptReconnect();
     }
   });
@@ -206,8 +206,8 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
       }
       telnetSocket = null;
       
-      // Start reconnection attempts if this wasn't a deliberate disconnect
-      if (lastConnectionInfo && !hadError) {
+      // Start reconnection attempts if we have connection info (not a deliberate disconnect)
+      if (lastConnectionInfo) {
         attemptReconnect();
       }
     });
