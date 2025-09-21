@@ -115,77 +115,38 @@ function attemptReconnect() {
   }
 
   reconnectTimer = setTimeout(() => {
-    connectToTelnetServer(lastConnectionInfo.host, lastConnectionInfo.port, true);
+    connectToTelnetServer(lastConnectionInfo.host, lastConnectionInfo.port, true).catch(() => {
+      // Error handling is already done in the connectToTelnetServer function
+    });
   }, delay);
 }
 
 function connectToTelnetServer(host, port, isReconnect = false) {
-  if (telnetSocket) {
-    telnetSocket.destroy();
-  }
-
-  telnetSocket = new net.Socket();
-  
-  telnetSocket.connect(port, host, () => {
-    if (!isReconnect) {
-      enableLogging = false; // Reset logging state on new connection
-      lastConnectionInfo = { host, port }; // Store for potential reconnection
-    }
-    reconnectAttempts = 0; // Reset reconnection attempts on successful connection
-    
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      if (isReconnect) {
-        mainWindow.webContents.send('telnet-reconnected', `Reconnected to ${host}:${port}`);
-      } else {
-        mainWindow.webContents.send('telnet-connected', `Connected to ${host}:${port}`);
-      }
-    }
-  });
-
-  telnetSocket.on('data', (data) => {
-    const dataString = data.toString();
-    logMudOutput(dataString);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('telnet-data', dataString);
-    }
-  });
-
-  telnetSocket.on('error', (error) => {
-    if (isReconnect) {
-      // If this is a reconnection attempt, try again
-      attemptReconnect();
-    } else {
-      // If this is the initial connection, report error immediately
-      throw new Error(error.message);
-    }
-  });
-
-  telnetSocket.on('close', (hadError) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('telnet-disconnected');
-    }
-    telnetSocket = null;
-    
-    // Start reconnection attempts if we have connection info (not a deliberate disconnect)
-    if (lastConnectionInfo) {
-      attemptReconnect();
-    }
-  });
-}
-
-ipcMain.handle('telnet-connect', async (event, host, port) => {
   return new Promise((resolve, reject) => {
     if (telnetSocket) {
       telnetSocket.destroy();
     }
 
     telnetSocket = new net.Socket();
-    
+
     telnetSocket.connect(port, host, () => {
-      enableLogging = false; // Reset logging state on new connection
-      lastConnectionInfo = { host, port }; // Store for potential reconnection
+      if (!isReconnect) {
+        enableLogging = false; // Reset logging state on new connection
+        lastConnectionInfo = { host, port }; // Store for potential reconnection
+      }
       reconnectAttempts = 0; // Reset reconnection attempts on successful connection
-      resolve({ success: true, message: `Connected to ${host}:${port}` });
+
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (isReconnect) {
+          mainWindow.webContents.send('telnet-reconnected', `Reconnected to ${host}:${port}`);
+        } else {
+          mainWindow.webContents.send('telnet-connected', `Connected to ${host}:${port}`);
+        }
+      }
+
+      if (resolve) {
+        resolve({ success: true, message: `Connected to ${host}:${port}` });
+      }
     });
 
     telnetSocket.on('data', (data) => {
@@ -197,7 +158,17 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
     });
 
     telnetSocket.on('error', (error) => {
-      reject({ success: false, message: error.message });
+      if (isReconnect) {
+        // If this is a reconnection attempt, try again
+        attemptReconnect();
+      } else {
+        // If this is the initial connection, report error immediately
+        if (reject) {
+          reject({ success: false, message: error.message });
+        } else {
+          throw new Error(error.message);
+        }
+      }
     });
 
     telnetSocket.on('close', (hadError) => {
@@ -205,13 +176,17 @@ ipcMain.handle('telnet-connect', async (event, host, port) => {
         mainWindow.webContents.send('telnet-disconnected');
       }
       telnetSocket = null;
-      
+
       // Start reconnection attempts if we have connection info (not a deliberate disconnect)
       if (lastConnectionInfo) {
         attemptReconnect();
       }
     });
   });
+}
+
+ipcMain.handle('telnet-connect', async (event, host, port) => {
+  return connectToTelnetServer(host, port, false);
 });
 
 ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
