@@ -194,12 +194,16 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
     if (!isAutoCommand) {
       enableLogging = true; // Enable logging when user sends first command
     }
-    // Replace ' !' at end of command with '!'
-    let s = data.replace(/ !$/, '!');
-    s = s.replace(/ \?$/, '?');
+	let s = data
+    // Substitute
     s = s.replace(/^' /, "'");
-    // If string begins with ' followed by letter, make letter uppercase
+
+    s = s.replace(/ !$/, '!');
+    s = s.replace(/ \?$/, '?');
+
     s = s.replace(/^(')([a-z])/, (match, p1, p2) => p1 + p2.toUpperCase());
+    s = s.replace(/^(")([a-z])/, (match, p1, p2) => p1 + p2.toUpperCase());
+
     telnetSocket.write(s + '\r\n');
     return { success: true };
   }
