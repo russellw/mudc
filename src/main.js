@@ -206,7 +206,7 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
     s = s.replace(/^(")([a-z])/, (match, p1, p2) => p1 + p2.toUpperCase());
 
     // Prepend backslash if message begins with a letter and is more than 4 characters
-    if (/^[a-zA-Z]/.test(s) && s.length > 4) {
+    if (/^[a-zA-Z]/.test(s) && s.length > 20) {
       s = '\\' + s;
     }
 
