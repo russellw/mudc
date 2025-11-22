@@ -194,7 +194,8 @@ ipcMain.handle('telnet-send', async (event, data, isAutoCommand = false) => {
     if (!isAutoCommand) {
       enableLogging = true; // Enable logging when user sends first command
     }
-	let s = data
+    let s = data
+
     // Substitute
     s = s.replace(/^' /, "'");
 
